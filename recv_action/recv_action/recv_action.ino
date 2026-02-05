@@ -12,7 +12,7 @@ const unsigned long POLL_MS = 2000;
 unsigned long lastPoll = 0;
 
 // ロジック用変数：閾値をそれぞれ用意
-int thresholdA = 30;
+int thresholdA = 10;
 int thresholdB = 30;
 int AButtonSum = 0;
 int BButtonSum = 0;
