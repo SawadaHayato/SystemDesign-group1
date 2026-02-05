@@ -3,8 +3,13 @@
 #include <HTTPClient.h>
 
 // Wi-Fi設定
-const char* ssid = "Galaxy_5GMW_2519";
-const char* password = "eerr0449";
+// 以下はつながらないので、一旦使わない
+//const char* ssid = "Galaxy_5GMW_2519";
+//const char* password = "eerr0449";
+
+// 以下の三井のテザリングで接続する
+const char* ssid = "test";
+const char* password = "testtest";
 
 // ★ Apps ScriptのWebアプリURL
 const char* scriptURL = "https://script.google.com/macros/s/AKfycbySw8R1D5C2Bbse0Th5JOkmtVnZ4ukdR7BU9wI2INr3jdT_refTnvoGPy7_-OGwrhep/exec";
