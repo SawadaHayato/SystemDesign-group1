@@ -3,11 +3,11 @@
 #include <HTTPClient.h>
 
 // Wi-Fi設定
-const char* ssid = "sawasakuraのiPhone";
-const char* password = "swkg6y9xwnhp0";
+const char* ssid = "Galaxy_5GMW_2519";
+const char* password = "eerr0449";
 
 // ★ Apps ScriptのWebアプリURL
-const char* scriptURL = "https://script.google.com/macros/s/AKfycbyI2E1DhC4VxDrSHS7T3qiPjYEC9tpqT8PilYEBz8Fv5v99lWSrLTZ33RN4PVrJBAYG/exec";
+const char* scriptURL = "https://script.google.com/macros/s/AKfycbySw8R1D5C2Bbse0Th5JOkmtVnZ4ukdR7BU9wI2INr3jdT_refTnvoGPy7_-OGwrhep/exec";
 
 void setup() {
   M5.begin();
