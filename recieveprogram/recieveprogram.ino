@@ -17,11 +17,12 @@ const unsigned long POLL_MS = 2000;
 unsigned long lastPoll = 0;
 
 // ボタンプログラム用
-int current_threshold = 30;
-int a = 0;
-int b = 0;
-int c = 0;
-bool flashflag(int ButtonSum) {
+int current_threshold_A = 30;
+int current_threshold_B = 1;
+int a;
+int b;
+
+bool flashflag(int ButtonSum, int current_threshold) {
   return ButtonSum >= current_threshold;
 }
 
@@ -78,7 +79,7 @@ void loop() {
       body.trim();
       a = extractInt(body, "A");
       b = extractInt(body, "B");
-      c = extractInt(body, "C");
+      int c = extractInt(body, "C");
 
       M5.Lcd.printf("A: %d\n", a);
       M5.Lcd.printf("B: %d\n", b);
@@ -93,14 +94,14 @@ void loop() {
   }
 
   // Aボタンの判定
-  if (flashflag(a)) {
+  if (flashflag(a, current_threshold_A)) {
     showCenterText("red", TFT_RED);
-    current_threshold += 10; 
+    current_threshold_A += 30; 
   }
   // Bボタンの判定
-  if (flashflag(b)) {
+  if (flashflag(b, current_threshold_B)) {
     showCenterText("blue", TFT_BLUE);
-    current_threshold += 10;
+    current_threshold_B += 1;
   }
 
   delay(10);
