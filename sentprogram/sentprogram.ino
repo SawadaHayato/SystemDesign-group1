@@ -1,3 +1,4 @@
+
 #include <M5Stack.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
@@ -7,8 +8,8 @@ const char* ssid = "sawasakuraのiPhone";
 const char* password = "swkg6y9xwnhp0";
 const char* scriptURL = "https://script.google.com/macros/s/AKfycbyI2E1DhC4VxDrSHS7T3qiPjYEC9tpqT8PilYEBz8Fv5v99lWSrLTZ33RN4PVrJBAYG/exec";
 
-const uint32_t THRESHOLD = 20;        // 閾値：20回
-const unsigned long LIMIT_MS = 10000; // 制限時間：10秒
+const uint32_t THRESHOLD = 20;        // 20回で即送信
+const unsigned long LIMIT_MS = 10000; // 10秒制限
 
 // --- 変数管理 ---
 uint32_t currentIntervalA = 0;
@@ -16,17 +17,68 @@ uint32_t currentIntervalB = 0;
 uint32_t currentIntervalC = 0;
 unsigned long lastIntervalStart = 0;
 
+// UI表示・ポップアップ制御
+bool popupVisible = false;
+unsigned long popupShownAt = 0;
+const unsigned long POPUP_MS = 1500;
+bool lastWiFiConnected = false;
+
 // --- 関数定義 ---
 
-// メインの黒い画面（メニュー）を描画
+// 1つ目のコード風のUIメニュー描画
 void drawStaticMenu() {
   M5.Lcd.fillScreen(BLACK);
   M5.Lcd.setTextColor(WHITE, BLACK);
   M5.Lcd.setTextSize(2);
+
   M5.Lcd.setCursor(10, 10);
-  M5.Lcd.println("Hybrid Send Mode");
+  M5.Lcd.println("Hybrid Send UI");
+
   M5.Lcd.setCursor(10, 40);
-  M5.Lcd.printf("Threshold:%d / Limit:10s", THRESHOLD);
+  M5.Lcd.println("A = Ehh...");
+  M5.Lcd.println("B = Okay.");
+  M5.Lcd.println("C = Nice!");
+
+  M5.Lcd.setCursor(10, 105);
+  M5.Lcd.printf("Target: %d taps / 10s", THRESHOLD);
+}
+
+// 1つ目のコードにあるWiFiステータス表示
+void drawWiFiStatus(bool connected) {
+  M5.Lcd.fillRect(10, 130, 300, 30, BLACK);
+  M5.Lcd.setTextColor(WHITE, BLACK);
+  M5.Lcd.setTextSize(2);
+  M5.Lcd.setCursor(10, 130);
+  M5.Lcd.print("WiFi: ");
+  M5.Lcd.println(connected ? "Connected" : "Not connected");
+  lastWiFiConnected = connected;
+}
+
+// 1つ目のコードにあるカウント表示
+void drawCountsLine() {
+  M5.Lcd.fillRect(10, 160, 300, 30, BLACK);
+  M5.Lcd.setTextColor(CYAN, BLACK);
+  M5.Lcd.setTextSize(2);
+  M5.Lcd.setCursor(10, 160);
+  M5.Lcd.printf("A:%2d  B:%2d  C:%2d", currentIntervalA, currentIntervalB, currentIntervalC);
+}
+
+// 1つ目のコードにあるポップアップ通知
+void showPopup(const char* line1, const char* line2) {
+  M5.Lcd.fillRect(10, 195, 300, 45, BLACK);
+  M5.Lcd.setTextColor(WHITE, BLACK);
+  M5.Lcd.setTextSize(2);
+  M5.Lcd.setCursor(10, 195);
+  M5.Lcd.print(line1);
+  M5.Lcd.setCursor(10, 217);
+  M5.Lcd.print(line2);
+  popupVisible = true;
+  popupShownAt = millis();
+}
+
+void clearPopup() {
+  M5.Lcd.fillRect(10, 195, 300, 45, BLACK);
+  popupVisible = false;
 }
 
 // カウントとタイマーをリセット
@@ -35,23 +87,17 @@ void resetAll() {
   currentIntervalB = 0;
   currentIntervalC = 0;
   lastIntervalStart = millis();
+  drawCountsLine();
 }
 
-// 送信処理（成功・失敗・WiFiエラーすべてから自動復帰）
+// 2つ目のコードのロジック（送信・演出）
 void sendData(int count, char btn, String typeText) {
-  // 1. WiFi未接続チェック
   if (WiFi.status() != WL_CONNECTED) {
-    M5.Lcd.fillScreen(BLUE); // エラー時は青
-    M5.Lcd.setTextColor(WHITE);
-    M5.Lcd.setTextSize(3);
-    M5.Lcd.setCursor(20, 100);
-    M5.Lcd.println("WiFi ERROR");
-    M5.Lcd.setTextSize(2);
-    M5.Lcd.setCursor(20, 140);
-    M5.Lcd.println("Return to Menu...");
-    
-    delay(2000);        // 2秒表示して
-    drawStaticMenu();   // 黒画面に戻る
+    showPopup("WiFi Error", "Check Connection");
+    M5.Lcd.fillScreen(BLUE);
+    delay(2000);
+    drawStaticMenu();
+    drawWiFiStatus(false);
     return;
   }
 
@@ -63,7 +109,7 @@ void sendData(int count, char btn, String typeText) {
   int httpCode = http.POST(payload);
   
   if (httpCode > 0) {
-    // 2. 送信成功
+    // 成功演出（2つ目のコードの機能）
     M5.Lcd.fillScreen(GREEN);
     M5.Lcd.setTextColor(BLACK);
     M5.Lcd.setTextSize(3);
@@ -75,19 +121,13 @@ void sendData(int count, char btn, String typeText) {
     
     delay(2000); 
     drawStaticMenu();
+    drawWiFiStatus(true);
   } else {
-    // 3. HTTPエラー（サーバー側の問題など）
+    // 失敗演出
     M5.Lcd.fillScreen(RED);
-    M5.Lcd.setTextColor(WHITE);
-    M5.Lcd.setTextSize(3);
-    M5.Lcd.setCursor(40, 100);
-    M5.Lcd.println("HTTP FAILED");
-    M5.Lcd.setTextSize(2);
-    M5.Lcd.setCursor(40, 140);
-    M5.Lcd.printf("Error: %d", httpCode);
-
     delay(2000);
     drawStaticMenu();
+    drawWiFiStatus(true);
   }
   http.end();
 }
@@ -95,19 +135,17 @@ void sendData(int count, char btn, String typeText) {
 void setup() {
   M5.begin();
   
-  // 起動時にWiFi接続を開始
   WiFi.begin(ssid, password);
-  M5.Lcd.print("Connecting to WiFi");
+  drawStaticMenu();
   
-  // つながるまで最大10秒待機
+  // WiFi接続待機
   int retry = 0;
-  while (WiFi.status() != WL_CONNECTED && retry < 20) {
+  while (WiFi.status() != WL_CONNECTED && retry < 10) {
     delay(500);
-    M5.Lcd.print(".");
     retry++;
   }
   
-  drawStaticMenu();
+  drawWiFiStatus(WiFi.status() == WL_CONNECTED);
   resetAll();
 }
 
@@ -115,9 +153,10 @@ void loop() {
   M5.update();
   unsigned long now = millis();
 
-  // --- 1) ボタン入力と閾値判定 (20回で即送信) ---
+  // --- 1) ボタン入力と即時判定 (2つ目のコードのロジック) ---
   if (M5.BtnA.wasPressed()) {
     currentIntervalA++;
+    drawCountsLine();
     if (currentIntervalA >= THRESHOLD) {
       sendData(currentIntervalA, 'A', "QUICK");
       resetAll();
@@ -126,6 +165,7 @@ void loop() {
   }
   if (M5.BtnB.wasPressed()) {
     currentIntervalB++;
+    drawCountsLine();
     if (currentIntervalB >= THRESHOLD) {
       sendData(currentIntervalB, 'B', "QUICK");
       resetAll();
@@ -134,6 +174,7 @@ void loop() {
   }
   if (M5.BtnC.wasPressed()) {
     currentIntervalC++;
+    drawCountsLine();
     if (currentIntervalC >= THRESHOLD) {
       sendData(currentIntervalC, 'C', "QUICK");
       resetAll();
@@ -141,27 +182,32 @@ void loop() {
     }
   }
 
-  // --- 2) 制限時間を超えた時の処理 (届かなくても送る) ---
+  // --- 2) 制限時間切れによる自動送信 (2つ目のコードのロジック) ---
   if (now - lastIntervalStart >= LIMIT_MS) {
-    // どれか一つでもカウントがあれば送信を実行
     if (currentIntervalA > 0) sendData(currentIntervalA, 'A', "TIME UP");
     if (currentIntervalB > 0) sendData(currentIntervalB, 'B', "TIME UP");
     if (currentIntervalC > 0) sendData(currentIntervalC, 'C', "TIME UP");
-
     resetAll();
   }
 
-  // --- 3) 画面表示の更新 (現在のカウントと残り時間) ---
-  M5.Lcd.setTextSize(2);
-  M5.Lcd.setCursor(10, 100);
-  M5.Lcd.setTextColor(CYAN, BLACK);
-  M5.Lcd.printf("A:%2d  B:%2d  C:%2d", currentIntervalA, currentIntervalB, currentIntervalC);
-  
+  // --- 3) WiFiステータス監視とポップアップ更新 (1つ目のコードのUI要素) ---
+  bool connected = (WiFi.status() == WL_CONNECTED);
+  if (connected != lastWiFiConnected) {
+    drawWiFiStatus(connected);
+  }
+
+  // 残り時間の表示更新
   long remaining = (LIMIT_MS - (now - lastIntervalStart)) / 100;
   if (remaining < 0) remaining = 0;
-  M5.Lcd.setCursor(10, 130);
+  M5.Lcd.setCursor(200, 105);
   M5.Lcd.setTextColor(WHITE, BLACK);
-  M5.Lcd.printf("Time: %2ld.%ld s ", remaining / 10, remaining % 10);
+  M5.Lcd.setTextSize(2);
+  M5.Lcd.printf("%2ld.%ld s ", remaining / 10, remaining % 10);
+
+  // ポップアップ消去処理
+  if (popupVisible && (now - popupShownAt >= POPUP_MS)) {
+    clearPopup();
+  }
 
   delay(10);
 }
