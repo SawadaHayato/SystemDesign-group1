@@ -18,9 +18,9 @@ unsigned long lastPoll = 0;
 
 // ボタンプログラム用
 int current_threshold = 30;
-int AButtonSum = 40;
-int BButtonSum = 0;
-
+int a = 0;
+int b = 0;
+int c = 0;
 bool flashflag(int ButtonSum) {
   return ButtonSum >= current_threshold;
 }
@@ -76,9 +76,9 @@ void loop() {
 
     if (code == 200) {
       body.trim();
-      int a = extractInt(body, "A");
-      int b = extractInt(body, "B");
-      int c = extractInt(body, "C");
+      a = extractInt(body, "A");
+      b = extractInt(body, "B");
+      c = extractInt(body, "C");
 
       M5.Lcd.printf("A: %d\n", a);
       M5.Lcd.printf("B: %d\n", b);
@@ -93,12 +93,12 @@ void loop() {
   }
 
   // Aボタンの判定
-  if (flashflag(AButtonSum)) {
+  if (flashflag(a)) {
     showCenterText("red", TFT_RED);
     current_threshold += 10; 
   }
   // Bボタンの判定
-  if (flashflag(BButtonSum)) {
+  if (flashflag(b)) {
     showCenterText("blue", TFT_BLUE);
     current_threshold += 10;
   }
