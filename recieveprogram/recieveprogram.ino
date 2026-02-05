@@ -17,11 +17,12 @@ const unsigned long POLL_MS = 2000;
 unsigned long lastPoll = 0;
 
 // ボタンプログラム用
-int current_threshold = 30;
-int AButtonSum = 40;
+int current_threshold_A = 30;
+int current_threshold_B = 1;
+int AButtonSum = 0;
 int BButtonSum = 0;
 
-bool flashflag(int ButtonSum) {
+bool flashflag(int ButtonSum, int current_threshold) {
   return ButtonSum >= current_threshold;
 }
 
@@ -93,14 +94,14 @@ void loop() {
   }
 
   // Aボタンの判定
-  if (flashflag(AButtonSum)) {
+  if (flashflag(AButtonSum, current_threshold_A)) {
     showCenterText("red", TFT_RED);
-    current_threshold += 10; 
+    current_threshold_A += 30; 
   }
   // Bボタンの判定
-  if (flashflag(BButtonSum)) {
+  if (flashflag(BButtonSum, current_threshold_B)) {
     showCenterText("blue", TFT_BLUE);
-    current_threshold += 10;
+    current_threshold_B += 1;
   }
 
   delay(10);
