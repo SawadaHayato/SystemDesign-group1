@@ -5,7 +5,7 @@
 // --- 設定エリア ---
 const char* ssid = "sawasakuraのiPhone";
 const char* password = "swkg6y9xwnhp0";
-const char* scriptURL = "https://script.google.com/macros/s/AKfycbyI2E1DhC4VxDrSHS7T3qiPjYEC9tpqT8PilYEBz8Fv5v99lWSrLTZ33RN4PVrJBAYG/exec";
+const char* scriptURL = "https://script.google.com/macros/s/AKfycbyHu6kCqNMnWJAggDpOjlJA0zhQLMa-Cjl8m3Wh2rrzg_XNKU9xV89NNeqXig1BH1C8/exec";
 
 const uint32_t THRESHOLD = 20;        // 閾値：20回
 const unsigned long LIMIT_MS = 10000; // 制限時間：10秒
@@ -126,19 +126,22 @@ void loop() {
   }
   if (M5.BtnB.wasPressed()) {
     currentIntervalB++;
-    if (currentIntervalB >= THRESHOLD) {
-      sendData(currentIntervalB, 'B', "QUICK");
-      resetAll();
-      return;
+    if (currentIntervalA > 0) {
+      sendData(currentIntervalA, 'A', "QUICK");
     }
+    sendData(currentIntervalB, 'B', "QUICK");
+    resetAll();
+    return;
   }
   if (M5.BtnC.wasPressed()) {
     currentIntervalC++;
-    if (currentIntervalC >= THRESHOLD) {
-      sendData(currentIntervalC, 'C', "QUICK");
-      resetAll();
-      return;
-    }
+    if (currentIntervalA > 0) {
+      sendData(currentIntervalA, 'A', "QUICK");
+    } 
+    sendData(currentIntervalC, 'C', "QUICK");
+    
+    resetAll();
+    return;
   }
 
   // --- 2) 制限時間を超えた時の処理 (届かなくても送る) ---
