@@ -2,7 +2,7 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <WiFiClientSecure.h>
-
+#include <stdlib.h>
 // Wi-Fi設定
 // 以下はつながらないので、一旦使わない
 //const char* ssid = "Galaxy_5GMW_2519";
@@ -19,10 +19,16 @@ unsigned long lastPoll = 0;
 // ボタンプログラム用
 int current_threshold_A = 30;
 int current_threshold_B = 1;
+int current_threshold_C = 1;
+
 int a = 0;
 int b = 0;
+int c = 0;
 
+bool used[10] = {false}; // 既読フラグ（すべて未読で初期化）
+int usedCount = 0;       // 何個表示したかをカウント
 
+char topic[10][10] = {"Hobby", "Food", "Music", "Movie", "Travel", "Sports", "Dream", "Weekend", "Challenge", "Routine"};
 bool flashflag(int ButtonSum, int current_threshold) {
   return ButtonSum >= current_threshold;
 }
@@ -75,12 +81,11 @@ void loop() {
     M5.Lcd.fillScreen(BLACK);
     M5.Lcd.setCursor(0, 0);
     M5.Lcd.printf("HTTP: %d\n\n", code);
-
     if (code == 200) {
       body.trim();
       a = extractInt(body, "A");
       b = extractInt(body, "B");
-      int c = extractInt(body, "C");
+      c = extractInt(body, "C");
 
       M5.Lcd.printf("A: %d\n", a);
       M5.Lcd.printf("B: %d\n", b);
@@ -94,15 +99,37 @@ void loop() {
     }
   }
 
+
   // Aボタンの判定
   if (flashflag(a, current_threshold_A)) {
-    showCenterText("red", TFT_RED);
+    showCenterText("ORANGE", TFT_ORANGE);
     current_threshold_A += a; 
   }
   // Bボタンの判定
   if (flashflag(b, current_threshold_B)) {
-    showCenterText("blue", TFT_BLUE);
+    showCenterText("BLUE", TFT_BLUE);
     current_threshold_B += b;
+  }
+  // Cボタンの判定
+  if (flashflag(c, current_threshold_C)) {
+    // 全て使い切っていたらリセット（ループ再生したい場合）
+    if (usedCount >= 10) {
+        for (int i = 0; i < 10; i++) used[i] = false;
+        usedCount = 0;
+    }
+
+    int num;
+    // まだ使われていない番号が出るまで繰り返す
+    do {
+        num = rand() % 10;
+    } while (used[num] == true);
+
+    // 選ばれた番号を「使用済み」にする
+    used[num] = true;
+    usedCount++;
+
+    showCenterText(topic[num], TFT_GREEN);
+    current_threshold_C += c;
   }
 
   delay(10);
@@ -112,9 +139,10 @@ void loop() {
 void showCenterText(const char* text, uint16_t color) {
   M5.Lcd.clear();
   M5.Lcd.setTextColor(color);
-  
+  M5.Lcd.setTextSize(6);
   // 画面の中心（160, 120）にテキストを表示
-  M5.Lcd.drawString(text, 160, 120);
+  M5.Lcd.drawString(text, 80, 120);
+  M5.Lcd.setTextSize(2);
   
   delay(5000); // 5秒待機
   M5.Lcd.clear();
