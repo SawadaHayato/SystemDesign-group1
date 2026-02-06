@@ -22,6 +22,7 @@ int current_threshold_B = 1;
 int a;
 int b;
 
+
 bool flashflag(int ButtonSum, int current_threshold) {
   return ButtonSum >= current_threshold;
 }
