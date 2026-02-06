@@ -19,8 +19,8 @@ unsigned long lastPoll = 0;
 // ボタンプログラム用
 int current_threshold_A = 30;
 int current_threshold_B = 1;
-int a;
-int b;
+int a = 0;
+int b = 0;
 
 
 bool flashflag(int ButtonSum, int current_threshold) {
@@ -97,12 +97,12 @@ void loop() {
   // Aボタンの判定
   if (flashflag(a, current_threshold_A)) {
     showCenterText("red", TFT_RED);
-    current_threshold_A += 30; 
+    current_threshold_A += a; 
   }
   // Bボタンの判定
   if (flashflag(b, current_threshold_B)) {
     showCenterText("blue", TFT_BLUE);
-    current_threshold_B += 1;
+    current_threshold_B += b;
   }
 
   delay(10);
