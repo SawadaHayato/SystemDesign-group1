@@ -4,8 +4,8 @@
 #include <HTTPClient.h>
 
 // --- 設定エリア ---
-const char* ssid = "sawasakuraのiPhone";
-const char* password = "swkg6y9xwnhp0";
+const char* ssid = "test";
+const char* password = "testtest";
 const char* scriptURL = "https://script.google.com/macros/s/AKfycbyI2E1DhC4VxDrSHS7T3qiPjYEC9tpqT8PilYEBz8Fv5v99lWSrLTZ33RN4PVrJBAYG/exec";
 
 const uint32_t THRESHOLD = 20;        // 20回で即送信
