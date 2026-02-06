@@ -5,7 +5,7 @@
 // --- 設定エリア ---
 const char* ssid = "sawasakuraのiPhone";
 const char* password = "swkg6y9xwnhp0";
-const char* scriptURL = "https://script.google.com/macros/s/AKfycbyI2E1DhC4VxDrSHS7T3qiPjYEC9tpqT8PilYEBz8Fv5v99lWSrLTZ33RN4PVrJBAYG/exec";
+const char* scriptURL = "https://script.google.com/macros/s/AKfycbz2lFhXlfZFqy6cph4DF-oYbcWMxCozfQYZJ9jNd9mNj9diKGw3EQzrP74D39A4Bn2D/exec";
 
 const uint32_t THRESHOLD = 20;        // 閾値：20回
 const unsigned long LIMIT_MS = 10000; // 制限時間：10秒

@@ -120,12 +120,12 @@ void loop() {
   // Aボタンの判定
   if (flashflag(a, current_threshold_A)) {
     showCenterText("ORANGE", TFT_ORANGE);
-    current_threshold_A += a - current_threshold_A; 
+    current_threshold_A += a; 
   }
   // Bボタンの判定
   if (flashflag(b, current_threshold_B)) {
     showCenterText("BLUE", TFT_BLUE);
-    current_threshold_B += b - current_threshold_B;
+    current_threshold_B += b;
   }
   // Cボタンの判定
   if (flashflag(c, current_threshold_C)) {
@@ -146,7 +146,7 @@ void loop() {
     usedCount++;
 
     showCenterText(topic[num], TFT_GREEN);
-    current_threshold_C += c - current_threshold_C;
+    current_threshold_C += c;
   }
 
   delay(10);
