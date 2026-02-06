@@ -11,13 +11,13 @@
 // 以下の三井のテザリングで接続する
 const char* ssid = "test";
 const char* password = "testtest";
-const char* scriptURL = "https://script.google.com/macros/s/AKfycbySw8R1D5C2Bbse0Th5JOkmtVnZ4ukdR7BU9wI2INr3jdT_refTnvoGPy7_-OGwrhep/exec";
+const char* scriptURL = "https://script.google.com/macros/s/AKfycbz2lFhXlfZFqy6cph4DF-oYbcWMxCozfQYZJ9jNd9mNj9diKGw3EQzrP74D39A4Bn2D/exec";
 
 const unsigned long POLL_MS = 2000;
 unsigned long lastPoll = 0;
 
 // ボタンプログラム用
-int current_threshold_A = 30;
+int current_threshold_A = 5;
 int current_threshold_B = 1;
 int current_threshold_C = 1;
 
@@ -48,18 +48,35 @@ int extractInt(const String& json, const char* key) {
 
 void setup() {
   M5.begin();
-  M5.Lcd.setBrightness(200);
-  M5.Lcd.setTextSize(2);
-  M5.Lcd.setCursor(0, 0);
-
-  M5.Lcd.println("WiFi connecting...");
+  
   WiFi.begin(ssid, password);
-
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(300);
+  M5.Lcd.print("Connecting to WiFi");
+  //変更箇所
+  WiFiClientSecure client;
+  client.setInsecure(); // SSL証明書の検証をスキップ
+  int retry = 0;
+  while (WiFi.status() != WL_CONNECTED && retry < 20) {
+    delay(500);
     M5.Lcd.print(".");
+    retry++;
   }
-  M5.Lcd.println("\nWiFi OK");
+  
+  // --- ここから追加：起動時にGASの値をリセットする ---
+  if (WiFi.status() == WL_CONNECTED) {
+    HTTPClient http;
+    // URLに ?action=reset を付与してリセット命令を送る
+    String resetURL = String(scriptURL) + "?action=reset";
+    http.begin(resetURL);
+    int httpCode = http.POST(""); // 空のデータをPOST
+    
+    if (httpCode > 0) {
+      M5.Lcd.println("\nSystem Reset OK");
+    } else {
+      M5.Lcd.println("\nReset Failed");
+    }
+    http.end();
+    delay(5000); // 確認用に少し待機
+  }
 }
 
 void loop() {
@@ -103,12 +120,12 @@ void loop() {
   // Aボタンの判定
   if (flashflag(a, current_threshold_A)) {
     showCenterText("ORANGE", TFT_ORANGE);
-    current_threshold_A += a; 
+    current_threshold_A += a - current_threshold_A; 
   }
   // Bボタンの判定
   if (flashflag(b, current_threshold_B)) {
     showCenterText("BLUE", TFT_BLUE);
-    current_threshold_B += b;
+    current_threshold_B += b - current_threshold_B;
   }
   // Cボタンの判定
   if (flashflag(c, current_threshold_C)) {
@@ -129,7 +146,7 @@ void loop() {
     usedCount++;
 
     showCenterText(topic[num], TFT_GREEN);
-    current_threshold_C += c;
+    current_threshold_C += c - current_threshold_C;
   }
 
   delay(10);
